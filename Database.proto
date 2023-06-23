@@ -1,13 +1,20 @@
 syntax = "proto3";
 package com.example.comp;
-
+import  'google/protobuf/empty.proto';
 option java_multiple_files = true;
 option java_package = "com.example.comp";
+
+enum Status {
+  UNKNOWN = 0;
+  ACTIVE = 1;
+  INACTIVE = 2;
+}
 
 
 service UserService {
   rpc hello(UserRequest) returns (User);
   rpc getUserByPost(PostRequest) returns (User);
+  rpc getAllUserName (google.protobuf.Empty) returns (UserList);
 }
 
 message User {
@@ -16,6 +23,7 @@ message User {
   string email = 3;
   string password = 4;
   repeated Post userPosts = 5;
+  Status status = 6;
 }
 
 message Post {
@@ -37,4 +45,8 @@ message UserRequest{
 
 message PostRequest{
   Post post = 1;
+}
+
+message UserList{
+  map<int32,string> List = 1;
 }
