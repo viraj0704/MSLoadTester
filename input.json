@@ -1,6 +1,39 @@
 [
-    {
-      "userId": 1
+  {
+    "post":{
+        "postComments": [
+            {
+                "content": "aaaaaaaaaa",
+                "postId": 0
+            },
+            {
+                "content": "aaaaaaaaaa",
+                "postId": 0
+            }
+        ],
+        "postNo": 0,
+        "title": "aaaaaaaaaa",
+        "content": "aaaaaaaaaa",
+        "userID": 1
     }
+  },
+  {
+    "post":{
+        "postComments": [
+            {
+                "content": "aaaaaaaaaa",
+                "postId": 0
+            },
+            {
+                "content": "aaaaaaaaaa",
+                "postId":  1
+            }
+        ],
+        "postNo": 0,
+        "title": "aaaaaaaaaa",
+        "content": "aaaaaaaaaa",
+        "userID": 2
+    }
+  }
 ]
   
