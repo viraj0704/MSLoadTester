@@ -10,7 +10,7 @@ import argparse
 import json
 import sys
 import csv
-
+from google.protobuf.empty_pb2 import Empty
 
 def generate_descriptor_set(proto_file, descriptor_file):
     # Generate the descriptor set file
@@ -119,7 +119,7 @@ def read_json_as_array_of_dicts(json_file):
     with open(json_file, 'r') as f:
         return json.load(f)
 
-def send_requests(user_id, server_address, num_requests,proto_file,service_name,method_name,messages,services,input_data):
+def send_requests(user_id, server_address, num_requests,proto_file,service_name,method_name,messages,services,request_name, response_name,input_data):
 
     protofile_pb2_grpc = importlib.import_module(proto_file.split(".")[0] + "_pb2_grpc")
     protofile_pb2 = importlib.import_module(proto_file.split(".")[0] + "_pb2")
@@ -130,7 +130,7 @@ def send_requests(user_id, server_address, num_requests,proto_file,service_name,
     stub = service_stub_class(channel)
 
     response_times = []
-    input_data_length = len(input_data)
+    input_data_length = max(len(input_data),1)
     input_data_index = 0
     success_count = 0 
     error_counts = {'Timeout error': 0, 'Internal server error': 0 , 'Invalid Agruments':0}
@@ -138,17 +138,26 @@ def send_requests(user_id, server_address, num_requests,proto_file,service_name,
         # request = grpc_client.createRequest( method_name, user_id)
         # request_name = "MyRequest"
         try:
-            request_name = services[service_name][method_name][0]
-            parameters = messages[request_name]
-            request_class = getattr(protofile_pb2, request_name)
-            
-            request = request_class(**input_data[input_data_index])
-            # for data in input_data:
-            #     for para in parameters:
+            request = None
+            if request_name != '':
+            # request_name = services[service_name][method_name][0]
+                parameters = messages[request_name]
+                request = None
+                request_class = None
 
-            #This will give the parameters in this request
+                request_class = getattr(protofile_pb2, request_name)
+                request = request_class(**input_data[input_data_index])
+
+                # for data in input_data:
+                #     for para in parameters:
+
+                #This will give the parameters in this request
+
+            else:
+                request = Empty()
+
             method_stub = getattr(stub, method_name)
-            
+                
             start_time = time.time()
             response = method_stub(request)
             end_time = time.time()
@@ -156,7 +165,7 @@ def send_requests(user_id, server_address, num_requests,proto_file,service_name,
             # if random.random() < 0.05:
             #     raise Exception("Random exception occurred")
             response_times.append(response_time)
-            response_name = services[service_name][method_name][1]
+            # response_name = services[service_name][method_name][1]
             attributes = messages[response_name]
             success_count += 1
             # add_count(success_count,user_id)
@@ -192,7 +201,7 @@ def send_requests(user_id, server_address, num_requests,proto_file,service_name,
     return (success_count, error_counts,response_times)
 
 
-def run_load_test(server_address, user_ids, num_requests,proto_file,service_name,method_name,messages,services,input_data,output_file):
+def run_load_test(server_address, user_ids, num_requests,proto_file,service_name,method_name,messages,services,request_name, response_name,input_data,output_file):
 
     generate_proto_files(proto_file)
     # Create channels for each user_id
@@ -204,7 +213,7 @@ def run_load_test(server_address, user_ids, num_requests,proto_file,service_name
     with ProcessPoolExecutor() as executor:
         futures = []
         for user_id in user_ids:
-            future = executor.submit(send_requests, user_id, server_address, num_requests,proto_file,service_name,method_name,messages,services,input_data)
+            future = executor.submit(send_requests, user_id, server_address, num_requests,proto_file,service_name,method_name,messages,services,request_name, response_name,input_data)
             futures.append(future)
 
         # Collect the response times from all the processes
@@ -308,15 +317,18 @@ if __name__ == '__main__':
     (messages, services) = generate_information(proto_file)
     # print(messages)
     # print(services)
+    request_name = services[service_name][method_name][0]
+    response_name = services[service_name][method_name][1]
     input_file = args.data
     input_data = []
-    if(input_file.split(".")[-1] == "json"):
-        input_data = read_json_as_array_of_dicts(input_file)
-    elif(input_file.split(".")[-1] == "csv"):
-        input_data = read_csv_as_array_of_dicts(input_file)
+    if request_name != '':
+        if(input_file.split(".")[-1] == "json"):
+            input_data = read_json_as_array_of_dicts(input_file)
+        elif(input_file.split(".")[-1] == "csv"):
+            input_data = read_csv_as_array_of_dicts(input_file)
     
 
-    print(input_data)
+    # print(input_data)
 
-    run_load_test(server_address, user_ids, num_requests, proto_file, service_name, method_name, messages, services, input_data, output_file)
+    run_load_test(server_address, user_ids, num_requests, proto_file, service_name, method_name, messages, services, request_name, response_name, input_data, output_file)
 
