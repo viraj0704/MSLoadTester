@@ -45,13 +45,13 @@ def parse_proto(proto_file):
                     if message_proto.name == input_type.split(".")[-1]:
                         input_message = message_proto
                         break
-
+                
                 if input_message:
                     if input_message.name not in messages:
                         paramters = []
                         for field_proto in input_message.field:
                             paramters.append(field_proto.name)
-                    messages[input_message.name] = paramters
+                        messages[input_message.name] = paramters
                 
 
                 output_message = None
@@ -65,7 +65,7 @@ def parse_proto(proto_file):
                         paramters = []
                         for field_proto in output_message.field:
                             paramters.append(field_proto.name)
-                    messages[output_message.name] = paramters
+                        messages[output_message.name] = paramters
 
                 methods[method_proto.name] =  [input_message.name if input_message else '', output_message.name if output_message else '']
 
@@ -97,16 +97,21 @@ def save_results_to_file(results, output_file):
 
 def read_csv_as_array_of_dicts(csv_file):
     result = []
-    
+
     with open(csv_file, 'r') as csvfile:
         reader = csv.reader(csvfile)
         headers = next(reader)  # Read the first row as headers
         for row in reader:
             row_dict = {}
             for i, value in enumerate(row):
+                try:
+                    # Try converting the value to an integer
+                    value = int(value)
+                except ValueError:
+                    pass  # Keep the value as a string if it cannot be converted to an integer
                 row_dict[headers[i]] = value
             result.append(row_dict)
-    
+
     return result
 
 
@@ -156,9 +161,9 @@ def send_requests(user_id, server_address, num_requests,proto_file,service_name,
             success_count += 1
             # add_count(success_count,user_id)
             print (f"Latency: {response_time:.4f}",end = ", ")
-            # for attr in attributes:
-            #     attr_val = getattr(response,attr)
-            #     print(f"{attr} : {attr_val}" , end = " ")
+            for attr in attributes:
+                attr_val = getattr(response,attr)
+                print(f"{attr} : {attr_val}" , end = " ")
             print(f" #user_id {user_id} , request number : {req}")
             
         except grpc.RpcError as e:
@@ -301,7 +306,8 @@ if __name__ == '__main__':
     service_name = callMethod.split(".")[-2]
     method_name = callMethod.split(".")[-1]
     (messages, services) = generate_information(proto_file)
-
+    # print(messages)
+    # print(services)
     input_file = args.data
     input_data = []
     if(input_file.split(".")[-1] == "json"):
@@ -310,7 +316,7 @@ if __name__ == '__main__':
         input_data = read_csv_as_array_of_dicts(input_file)
     
 
-
+    print(input_data)
 
     run_load_test(server_address, user_ids, num_requests, proto_file, service_name, method_name, messages, services, input_data, output_file)
 
