@@ -1,0 +1,40 @@
+syntax = "proto3";
+package com.example.comp;
+
+option java_multiple_files = true;
+option java_package = "com.example.comp";
+
+
+service UserService {
+  rpc hello(UserRequest) returns (User);
+  rpc getUserByPost(PostRequest) returns (User);
+}
+
+message User {
+  int64 userId = 1;
+  string username = 2;
+  string email = 3;
+  string password = 4;
+  repeated Post userPosts = 5;
+}
+
+message Post {
+  int64 postNo = 1;
+  string title = 2;
+  string content = 3;
+  int64 userID = 4;
+  repeated Comment postComments = 5;
+}
+
+message Comment {
+  string content = 1;
+  int64 postId = 2;
+}
+
+message UserRequest{
+  int64 userId = 1;
+}
+
+message PostRequest{
+  Post post = 1;
+}
