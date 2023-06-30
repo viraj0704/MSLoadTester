@@ -29,14 +29,14 @@ Run the following command in your terminal to execute the load tester:
 
 ## Dynamic Change in Concurrent Users
 
-The gRPC Load Tester provides a powerful feature that allows you to dynamically change the number of concurrent users over time during your load testing. This feature is particularly useful for scenarios where you want to gradually increase or decrease the load on your gRPC server.
+The gRPC Load Tester provides a powerful feature that allows you to dynamically change the number of concurrent users over time during your load testing. This feature is particularly useful for scenarios where you want to gradually increase the load on your gRPC server.
 
 To utilize this feature, you need to specify the following additional arguments:
 
 - `-c_start CONCURRENCY_START`: This argument sets the starting number of concurrent users.
 - `-c_step CONCURRENCY_STEP`: This argument determines the number of concurrent users to increment after each specified duration.
 - `-c_end CONCURRENCY_END`: This argument sets the final number of concurrent users.
-- `-c_step_duration CONCURRENCY_STEP_DURATION`: This argument specifies the duration (in seconds) after which the number of concurrent users will be incremented or decremented by the value specified in `-c_step`.
+- `-c_step_duration CONCURRENCY_STEP_DURATION`: This argument specifies the duration (in seconds) after which the number of concurrent users will be incremented by the value specified in `-c_step`.
 
 For example, let's say you set `-c_start` to 10, `-c_step` to 5, `-c_end` to 30, and `-c_step_duration` to 10. In this case, the load tester will start with 10 concurrent users, and every 10 seconds, it will increase the number of concurrent users by 5 until it reaches 30.
 
