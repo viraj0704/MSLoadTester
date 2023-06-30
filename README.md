@@ -5,7 +5,7 @@ The gRPC Load Tester is a command-line tool designed to perform load testing on 
 To get started with the gRPC Load Tester, follow these steps:
 
 1. Download the **'microservice_load_tester.py'** file from this repository.
-2. Place the Proto file and input data file in the same directory as the **'microservice_load_tester.py'** file.
+2. Ensure that you have the necessary Proto file and input data file for your gRPC service.
 ### Usage
 Run the following command in your terminal to execute the load tester:
 ```shell
@@ -18,9 +18,9 @@ python load_tester.py [-h] [-addr ADDRESS] [-c CONCURRENCY] [-n TOTAL] [-proto P
 - `-addr ADDRESS`, `--address ADDRESS`: Server address in the format `<hostname>:<port>`.
 - `-c CONCURRENCY`, `--concurrency CONCURRENCY`: Number of concurrent users. (Default: 1)
 - `-n TOTAL`, `--total TOTAL`: Total number of requests. (Default: 1)
-- `-proto PROTO`: Specifies the Proto file (should be in the same directory as the script).
+- `-proto PROTO`: Specifies the path to the Proto file.
 - `-call CALL`: Method to call in the syntax: `package.service.method`.
-- `-d DATA`, `--data DATA`:  Specifies the input data file (should be in the same directory as the script).
+- `-d DATA`, `--data DATA`:  Specifies the path to the input data file.
 - `-o OUTPUT`: Output file name. (Default: "output.json")
 
-Please ensure that you have placed the necessary Proto file and input data file in the same directory as the microservice_load_tester.py script. Adjust the command-line arguments as per your gRPC server configuration and load testing requirements.
+Please ensure that you provide the correct path for the Proto file and input data file by using the -proto and -d options respectively. Adjust the command-line arguments as per your gRPC server configuration and load testing requirements.

@@ -24,7 +24,7 @@ def parse_proto(proto_file):
     # Generate the descriptor set file
     file_name = os.path.basename(proto_file)
     descriptor_file =  os.path.splitext(file_name)[0] + ".desc"
-    print(descriptor_file)
+    # print(descriptor_file)
     generate_descriptor_set(proto_file, descriptor_file)
 
     # Parse the descriptor set file
@@ -372,9 +372,9 @@ if __name__ == '__main__':
     parser.add_argument('-c_end','--concurrency_end', type=int, help='Concurrency end value')
     parser.add_argument('-c_step_duration','--concurrency_step_duration', type=int, help='Specifies the concurrency step duration value',default=1)
     parser.add_argument('-n', '--total',type=int, help='Total number of requests',default=1)
-    parser.add_argument('-proto', type=str, help='Proto file')
+    parser.add_argument('-proto', type=str, help='Specifies path to Proto file')
     parser.add_argument('-call', type=str, help='Method to call in syntax: "package.service.method"')
-    parser.add_argument('-d','--data', type=str, help='Input data file')
+    parser.add_argument('-d','--data', type=str, help='Specifies path to Input data file')
     parser.add_argument('-o', type=str, help='Output File',default="output.json")
     
     args = parser.parse_args()
