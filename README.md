@@ -9,7 +9,7 @@ To get started with the gRPC Load Tester, follow these steps:
 ### Usage
 Run the following command in your terminal to execute the load tester:
 ```shell
-python load_tester.py [-h] [-addr ADDRESS] [-c CONCURRENCY] [-n TOTAL] [-proto PROTO] [-call CALL] [-d DATA] [-o OUTPUT]
+[-h] [-addr ADDRESS] [-c CONCURRENCY] [-c_start CONCURRENCY_START] [-c_step CONCURRENCY_STEP] [-c_end CONCURRENCY_END] [-c_step_duration CONCURRENCY_STEP_DURATION] [-n TOTAL] [-proto PROTO] [-call CALL] [-d DATA] [-o OUTPUT]
 ```
 
 ### Arguments
