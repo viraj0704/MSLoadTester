@@ -1,4 +1,5 @@
 
+import os
 import time
 import random
 import grpc
@@ -16,12 +17,14 @@ from google.protobuf.empty_pb2 import Empty
 
 def generate_descriptor_set(proto_file, descriptor_file):
     # Generate the descriptor set file
-    command = f"protoc --include_imports --include_source_info --descriptor_set_out={descriptor_file} {proto_file}  2>/dev/null"
+    command = f"protoc --include_imports --include_source_info --descriptor_set_out=./{descriptor_file} --proto_path={os.path.dirname(proto_file)}  {proto_file}"
     subprocess.run(command, shell=True)
 
 def parse_proto(proto_file):
     # Generate the descriptor set file
-    descriptor_file = proto_file.split(".")[0] + ".desc"
+    file_name = os.path.basename(proto_file)
+    descriptor_file =  os.path.splitext(file_name)[0] + ".desc"
+    print(descriptor_file)
     generate_descriptor_set(proto_file, descriptor_file)
 
     # Parse the descriptor set file
@@ -79,7 +82,7 @@ def parse_proto(proto_file):
 
 def generate_proto_files(proto_file):
     # Run the protoc command to generate the Python files
-    command = f"python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. {proto_file}  2>/dev/null"
+    command = f"python3 -m grpc_tools.protoc  --python_out=. --grpc_python_out=. --proto_path={os.path.dirname(proto_file)} {proto_file}  "
     subprocess.run(command, shell=True)
 
 
@@ -141,8 +144,9 @@ def import_module_from_path(module_path):
 def send_requests(user_id, server_address, num_requests,proto_file,service_name,method_name,messages,services,request_name, response_name,input_data):
 
     start_time_overall = time.time()
-    protofile_pb2_grpc = import_module_from_path(proto_file.split(".")[0] + "_pb2_grpc.py")
-    protofile_pb2 = import_module_from_path(proto_file.split(".")[0] + "_pb2.py")
+    file_name = os.path.basename(proto_file)
+    protofile_pb2_grpc = importlib.import_module(os.path.splitext(file_name)[0] + "_pb2_grpc")
+    protofile_pb2 = importlib.import_module(os.path.splitext(file_name)[0] + "_pb2")
     # Create a channel for this user
     channel = grpc.insecure_channel(server_address)
     service_stub_class = getattr(protofile_pb2_grpc, service_name + 'Stub')
@@ -394,10 +398,8 @@ if __name__ == '__main__':
     input_file = args.data
     input_data = []
     if request_name != '':
-        if(input_file.split(".")[-1] == "json"):
-            input_data = read_json_as_array_of_dicts(input_file)
-        elif(input_file.split(".")[-1] == "csv"):
-            input_data = read_csv_as_array_of_dicts(input_file)
+        input_data = read_json_as_array_of_dicts(input_file)
+        
     
     initial_users = args.concurrency_start
     ramp_up_users = args.concurrency_step
