@@ -13,7 +13,8 @@ import sys
 import csv
 import matplotlib.pyplot as plt
 from google.protobuf.empty_pb2 import Empty
-
+import numpy as np
+import seaborn as sns
 
 def generate_descriptor_set(proto_file, descriptor_file):
     # Generate the descriptor set file
@@ -123,17 +124,51 @@ def read_csv_as_array_of_dicts(csv_file):
 def read_json_as_array_of_dicts(json_file):
     with open(json_file, 'r') as f:
         return json.load(f)
+    
+def percentile_i ( response_times, i):
+    return response_times[int(len(response_times) * 0.01 * i)]
+
+def plotHistogram (data,title,x_label,y_label):
+    num_bins = (int) (np.sqrt(len(data)))
+    if(len(data) != 1):
+        data = np.clip(data, data[0], percentile_i(data,99))
+        iqr = np.percentile(data, 75) - np.percentile(data, 25)
+        bin_width = 2 * iqr / (len(data) ** (1/3))
+        num_bins = int((data[len(data)-1] - data[0]) / bin_width)
+    plt.clf()
+    plt.hist(data, bins=num_bins,  edgecolor='black')
+
+    # Set labels and title
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    # plt.title(title)
+    plt.grid(True, linestyle='--', alpha=0.5)
+
+# # Remove top and right spines
+#     plt.gca().spines['top'].set_visible(False)
+#     plt.gca().spines['right'].set_visible(False)
+
+#     # Customize tick labels
+#     plt.xticks(fontsize=8)
+#     plt.yticks(fontsize=8)
+
+
+    # Save the plot as an image
+    plt.savefig(title,  dpi=300, bbox_inches='tight')
+
+
 
 def plot_dictionary(dict,title,x_label,y_label):
     x_val = list(dict.keys())
     y_val = list(dict.values())
     plt.clf()
-    plt.plot(x_val,y_val)
+    # sns.set(style="whitegrid")
+    plt.plot(x_val,y_val,marker='o', markersize=5, linewidth=2, color='black')
     plt.xlabel(x_label)
     plt.ylabel(y_label)
-    plt.title(title)
+    # plt.title(title)
 
-    plt.savefig(title)
+    plt.savefig(title, dpi=300, bbox_inches='tight')
     
 def import_module_from_path(module_path):
     module_name = module_path.replace("/", ".").replace(".py", "")
@@ -141,7 +176,8 @@ def import_module_from_path(module_path):
     return module
 
 
-def send_requests(user_id, server_address, num_requests,proto_file,service_name,method_name,messages,services,request_name, response_name,input_data):
+
+def send_requests(user_id, server_address, num_requests,proto_file,service_name,method_name,messages,services,request_name, response_name,input_data,time_per_request):
 
     start_time_overall = time.time()
     file_name = os.path.basename(proto_file)
@@ -161,6 +197,7 @@ def send_requests(user_id, server_address, num_requests,proto_file,service_name,
     for req in range(num_requests):
         # request = grpc_client.createRequest( method_name, user_id)
         # request_name = "MyRequest"
+        request_start_time = time.time()
         try:
             request = None
             if request_name != '':
@@ -195,23 +232,25 @@ def send_requests(user_id, server_address, num_requests,proto_file,service_name,
         except grpc.RpcError as e:
             # Handle gRPC errors
             if e.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
-                print(f'User_ID: {user_id}, Error: Deadline exceeded')
+                print(f'User_ID: {user_id}, Error0: Deadline exceeded')
                 error_counts['Timeout error'] += 1
             
             elif e.code() == grpc.StatusCode.INVALID_ARGUMENT:
-                print(f'User_ID: {user_id}, Error: {e.details()}')
+                print(f'User_ID: {user_id}, Error1: {e.details()}')
                 error_counts['Invalid Agruments'] += 1
             else:
-                print(f'User_ID: {user_id}, Error: {e.details()}')
+                print(f'User_ID: {user_id}, Error2: {e.details()}')
                 error_counts['Internal server error'] += 1
         
         except Exception as e:
             # Handle other exceptions
-            print(f'User_ID: {user_id}, Error: {str(e)}')
+            print(f'User_ID: {user_id}, Error3: {str(e)}')
             error_counts['Internal server error'] += 1
         # print() 
         input_data_index = (input_data_index + 1) % input_data_length
-        time.sleep(0.1)
+        # if(time_per_request - ( time.time() - request_start_time) > 0):
+        #     time.sleep(abs(time_per_request - ( time.time() - request_start_time)))
+        # time.sleep(1*(random.random()))
     channel.close()
     end_time_overall = time.time()
     # print(f'Overall time of user_id : {user_id} is {(end_time_overall-start_time_overall)*1000}')
@@ -249,9 +288,14 @@ def run_load_test(server_address, num_users, num_requests,proto_file,service_nam
     percentile50_latency_overall = {}
     percentile90_latency_overall = {}
     percentile99_latency_overall = {}
+    min_latency_overall = {}
+    max_latency_overall = {}
     flag = 0
+    num_requests_overall = num_requests
     start_time = time.time()
-
+    response_times_overall = []
+    total_success_overall = 0
+    error_counts_overall = {'Timeout error': 0, 'Internal server error': 0, 'Invalid Agruments' : 0}
     while True:
         if (( time.time() - start_time) < ramp_up_time) and flag == 0:
             if(curr_users >= max_users):
@@ -275,7 +319,8 @@ def run_load_test(server_address, num_users, num_requests,proto_file,service_nam
                     # Compare the user number with remain_requests
                     if user_number <= remain_requests:
                         total_requests += 1
-                    future = executor.submit(send_requests, user_id, server_address, total_requests,proto_file,service_name,method_name,messages,services,request_name, response_name,input_data)
+                    time_per_request = ramp_up_time/total_requests
+                    future = executor.submit(send_requests, user_id, server_address, total_requests,proto_file,service_name,method_name,messages,services,request_name, response_name,input_data,time_per_request)
                     futures.append(future)
 
                 # Collect the response times from all the processes
@@ -285,11 +330,12 @@ def run_load_test(server_address, num_users, num_requests,proto_file,service_nam
                     success_count += result_success_count
                     for key, value in result_error_count.items():
                         error_counts[key] += value
+                        error_counts_overall[key] += value
 
 
 
             total_success = success_count
-
+            total_success_overall += total_success
             # Calculate number of failures
             total_failures = num_requests_all - total_success
 
@@ -304,6 +350,7 @@ def run_load_test(server_address, num_users, num_requests,proto_file,service_nam
             percentile_index_50 = int(len(response_times) * 0.50)
             percentile_index_90 = int(len(response_times) * 0.90)
             response_times = sorted(response_times)
+            response_times_overall.extend(response_times)
             percentile_99 = response_times[percentile_index_99]
             percentile_50 = response_times[percentile_index_50]
             percentile_90 = response_times[percentile_index_90]
@@ -321,8 +368,12 @@ def run_load_test(server_address, num_users, num_requests,proto_file,service_nam
                     'min': min_response_time,
                     'max': max_response_time,
                     'percentiles': {
+                        '10': percentile_i(response_times,10),
+                        '25': percentile_i(response_times,25),
                         '50': percentile_50,
+                        '75': percentile_i(response_times,75),
                         '90': percentile_90,
+                        '95': percentile_i(response_times,95),
                         '99': percentile_99
                     }
                 },
@@ -337,6 +388,8 @@ def run_load_test(server_address, num_users, num_requests,proto_file,service_nam
             percentile50_latency_overall[curr_users] =  percentile_50
             percentile90_latency_overall[curr_users] =  percentile_90
             percentile99_latency_overall[curr_users] =  percentile_99
+            min_latency_overall[curr_users] = min_response_time
+            max_latency_overall[curr_users] = max_response_time
                 # Save results to file
             save_results_to_file(results, output_file.split(".")[0] + ' '+ f'{curr_users}' + ".json")
 
@@ -357,8 +410,40 @@ def run_load_test(server_address, num_users, num_requests,proto_file,service_nam
     plot_dictionary(percentile50_latency_overall,"50 Latency","Number of Users","50 Latency")
     plot_dictionary(percentile90_latency_overall,"90 Latency","Number of Users","90 Latency")
     plot_dictionary(percentile99_latency_overall,"99 Latency","Number of Users","99 Latency")
-
-
+    plot_dictionary(min_latency_overall,"Minimum Latency","Number of Users","Minimum Latency")
+    plot_dictionary(max_latency_overall,"Maximum Latency","Number of Users","Maximum Latency")
+    success_rate = (total_success_overall / num_requests_overall) * 100 if (num_requests_overall) > 0 else 0
+    response_times_overall = sorted(response_times_overall)
+    results = {
+        'requests': {
+            'total': num_requests_overall,
+            'success': total_success_overall,
+            'failure': num_requests-total_success_overall,
+            'rate': success_rate
+        },
+        'latency': {
+            'average': sum(response_times_overall) / len(response_times_overall),
+            'min': response_times_overall[0],
+            'max': response_times_overall[-1],
+            'percentiles': {
+                '10': percentile_i(response_times_overall,10),
+                '25': percentile_i(response_times_overall,25),
+                '50': percentile_i(response_times_overall,50),
+                '75': percentile_i(response_times_overall,75),
+                '90': percentile_i(response_times_overall,90),
+                '95': percentile_i(response_times_overall,95),
+                '99': percentile_i(response_times_overall,99),
+            }
+        },
+        'errors': [
+            {'message': error_message, 'count': error_counts_overall[error_message]}
+            for error_message in error_counts_overall
+        ],
+        'throughput': success_rate,
+        'status': 'completed'
+    }
+    save_results_to_file(results, output_file)
+    plotHistogram(response_times_overall,"Response Time Histogram",'Response Times','Frequency')
     print(f'Load test results saved to {output_file}')
 
 
@@ -405,9 +490,32 @@ if __name__ == '__main__':
     ramp_up_users = args.concurrency_step
     ramp_up_time  = args.concurrency_step_duration
     max_users     = args.concurrency_end
-
-
-
+    num_users_display = num_users
+    ramp_up_users_display = ramp_up_users
+    ramp_up_time_display = ramp_up_time
+    if(initial_users != None):
+        num_users_display = None
+    else:
+        ramp_up_users_display = None
+        ramp_up_time_display = None
+    options_data = {
+        "call": callMethod,
+        "proto": proto_file,
+        "addr": server_address,
+        "n": num_requests,
+        "c": num_users_display,
+        "concurrency_start" : initial_users,
+        "concurrency_step" : ramp_up_users_display,
+        "concurrency_end" : max_users,
+        "concurrency_step_duration": ramp_up_time_display,
+        "output" : output_file,
+        "data": input_file,
+        "insecure": True,
+        "name": f"{service_name} {method_name}"
+    }
+    save_results_to_file(options_data,"options.json")
+    
+    print(input_data)
 
     # print(input_data)
     start_time = time.time()

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Website Performance Dashboard</title>
+  <!-- Include Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+
+<body>
+  <header class="bg-primary text-white text-center py-5">
+    <h1 id="heading" class="text-center"></h1>
+  </header>
+  <div class="container">
+    <nav class="mb-4">
+      <ul class="nav nav-pills">
+        <li class="nav-item">
+          <a class="nav-link" href="#summary"><i class="fas fa-info-circle"></i> Summary</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#latency"><i class="fas fa-clock"></i> Latency Distribution</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#errors-options"><i class="fas fa-exclamation-triangle"></i> Errors</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#errors-options"><i class="fas fa-cogs"></i> Options</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#latency-distribution-graphs"><i class="fas fa-chart-line"></i> Latency Distribution Graphs</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#response-time"><i class="fas fa-chart-bar"></i> Response Time Histogram</a>
+        </li>
+      </ul>
+    </nav>
+
+    <section id="summary" class="mt-4">
+      <h2>Summary</h2>
+      <div class="card-deck">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Count</h5>
+            <p class="card-text" id="summaryCount"></p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Slowest</h5>
+            <p class="card-text" id="summarySlowest"></p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Fastest</h5>
+            <p class="card-text" id="summaryFastest"></p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Average</h5>
+            <p class="card-text" id="summaryAverage"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="latency" class="mt-4">
+      <h2>Latency Distribution</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>10%</th>
+            <th>25%</th>
+            <th>50%</th>
+            <th>75%</th>
+            <th>90%</th>
+            <th>95%</th>
+            <th>99%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td id="latency10"></td>
+            <td id="latency25"></td>
+            <td id="latency50"></td>
+            <td id="latency75"></td>
+            <td id="latency90"></td>
+            <td id="latency95"></td>
+            <td id="latency99"></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="errors-options" class="mt-4">
+      <div class="row">
+        <div class="col-md-3">
+          <h2>Errors</h2>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Error Message</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody id="errorsTableBody">
+            </tbody>
+          </table>
+        </div>
+        <div class="col-md-1"></div>
+        <div class="col-md-8">
+          <h2>Options</h2>
+          <pre id="optionsData"></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="latency-distribution-graphs" class="mt-4">
+      <h2 >Latency Distribution Graphs</h2>
+      <br>
+      <div class="row">
+        <div class="col-md-4">
+          <h3 class="text-center"> Average Latency</h3>
+          <img src="Average Latency.png" alt="50 Latency" class="img-fluid">
+        </div>
+        <div class="col-md-4">
+          <h3 class="text-center"> Minimum Latency (Fastest)</h3>
+          <img src="Minimum Latency.png" alt="90 Latency" class="img-fluid">
+        </div>
+        <div class="col-md-4">
+          <h3 class="text-center"> Maximum Latency (Slowest)</h3>
+          <img src="Maximum Latency.png" alt="99 Latency" class="img-fluid">
+        </div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="col-md-4">
+          <h3 class="text-center"> 50th Percentile Latency</h3>
+          <img src="50 Latency.png" alt="50 Latency" class="img-fluid">
+        </div>
+        <div class="col-md-4">
+          <h3 class="text-center"> 90th Percentile Latency</h3>
+          <img src="90 Latency.png" alt="90 Latency" class="img-fluid">
+        </div>
+        <div class="col-md-4">
+          <h3 class="text-center"> 99th Percentile Latency</h3>
+          <img src="99 Latency.png" alt="99 Latency" class="img-fluid">
+        </div>
+      </div>
+    </section>
+
+    <!-- <section class="mt-4" id="average-latency">
+      <div class="row" >
+        <div class="col-md-6">
+          <h2 class="text-center">Average Latency</h2>
+          <img src="Average Latency.png" alt="Average Latency" class="img-fluid">
+        </div>
+        <div class="col-md-6">
+          <h2 class="text-center">Response Time Histogram</h2>
+          <img src="Response Time Histogram.png" alt="Response Time Histogram" class="img-fluid">
+        </div>
+      </div>
+    </section> -->
+
+    
+    <section id="response-time" class="mt-4">
+      
+      <div class="row">
+        <div class="col-md-6" id="response-time">
+          <h2 >Response Time Histogram</h2>
+          <img src="Response Time Histogram.png" alt="Response Time Histogram" class="img-fluid">
+        </div>
+      </div>
+    </section>
+    
+    
+  </div>
+
+  <!-- Include Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    // Fetch the options.json file
+    fetch('options.json')
+      .then(response => response.json())
+      .then(options => {
+        document.getElementById('heading').textContent = options.name;
+
+        const optionsTableBody = document.getElementById('optionsData');
+
+        optionsTableBody.textContent = JSON.stringify(options, null, 2);
+
+        const optionsList = document.getElementById('optionsList');
+
+        // Retrieve data from the specified output file
+        const outputFilename = options.output;
+        console.log(outputFilename)
+        fetch(outputFilename)
+          .then(response => response.json())
+          .then(data => {
+            // Display summary data
+            document.getElementById('summaryCount').textContent = data.requests.total;
+            document.getElementById('summarySlowest').textContent = data.latency.max.toFixed(4) + ' ms';
+            document.getElementById('summaryFastest').textContent = data.latency.min.toFixed(4) + ' ms';
+            document.getElementById('summaryAverage').textContent = data.latency.average.toFixed(4) + ' ms';
+
+            // Display latency distribution data
+            document.getElementById('latency10').textContent = data.latency.percentiles['10'].toFixed(4) + ' ms';
+            document.getElementById('latency25').textContent = data.latency.percentiles['25'].toFixed(4) + ' ms';
+            document.getElementById('latency50').textContent = data.latency.percentiles['50'].toFixed(4) + ' ms';
+            document.getElementById('latency75').textContent = data.latency.percentiles['75'].toFixed(4) + ' ms';
+            document.getElementById('latency90').textContent = data.latency.percentiles['90'].toFixed(4) + ' ms';
+            document.getElementById('latency95').textContent = data.latency.percentiles['95'].toFixed(4) + ' ms';
+            document.getElementById('latency99').textContent = data.latency.percentiles['99'].toFixed(4) + ' ms';
+
+            // Display errors data
+            const errorsTableBody = document.getElementById('errorsTableBody');
+            for (const error of data.errors) {
+              const errorRow = document.createElement('tr');
+              errorRow.innerHTML = `
+                <td>${error.message}</td>
+                <td>${error.count}</td>
+              `;
+              errorsTableBody.appendChild(errorRow);
+            }
+            console.log(options.c)
+            
+            if(options.c != null){
+              const latencyGraphsSection = document.getElementById('latency-distribution-graphs');
+              latencyGraphsSection.style.display = 'none';
+                    // Disable the "Average Latency" graph
+              // const averageLatencyGraph = document.getElementById('average-latency');
+              // averageLatencyGraph.style.display = 'none';            
+
+            }
+
+
+
+
+            const optionsData = document.getElementById('optionsData');
+            optionsData.innerHTML = JSON.stringify(options, (key, value) => {
+              if (value == null) {
+                return undefined;
+              }
+              return value;
+            }, 2);
+                    // Make options clickable
+            // const optionsData = document.getElementById('optionsData');
+
+            // optionsData.innerHTML = JSON.stringify(options, (key, value) => {
+            //   if (key === 'proto' || key === 'data' || key === 'output') {
+            //     let url;
+            //     try {
+            //       new URL(value); // Check if it's a valid absolute URL
+            //       url = value;
+            //     } catch (error) {
+            //       // Not a valid URL, consider it as relative
+            //       const relativePath = value.startsWith('/') ? value.slice(1) : value; // Remove leading slash if present
+            //       console.log(relativePath, typeof relativePath);
+            //       return `<a href=${relativePath} target="_blank">${value}</a>`;
+            //     }
+            //     console.log(url)
+            //     return `<a href=${url} target="_blank">${url}</a>`;
+            //   }
+              
+            //   return value;
+            // }, 2);
+
+          })
+          .catch(error => {
+            console.error('Error fetching output data:', error);
+          });
+      })
+      .catch(error => {
+        console.error('Error fetching options:', error);
+      });
+  </script>
+</body>
+
+</html>
