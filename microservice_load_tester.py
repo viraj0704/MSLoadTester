@@ -141,19 +141,7 @@ def plotHistogram (data,title,x_label,y_label):
     # Set labels and title
     plt.xlabel(x_label)
     plt.ylabel(y_label)
-    # plt.title(title)
     plt.grid(True, linestyle='--', alpha=0.5)
-
-# # Remove top and right spines
-#     plt.gca().spines['top'].set_visible(False)
-#     plt.gca().spines['right'].set_visible(False)
-
-#     # Customize tick labels
-#     plt.xticks(fontsize=8)
-#     plt.yticks(fontsize=8)
-
-
-    # Save the plot as an image
     plt.savefig(title,  dpi=300, bbox_inches='tight')
 
 
@@ -179,7 +167,7 @@ def import_module_from_path(module_path):
 
 def send_requests(user_id, server_address, num_requests,proto_file,service_name,method_name,messages,services,request_name, response_name,input_data,time_per_request):
 
-    start_time_overall = time.time()
+    # start_time_overall = time.time()
     file_name = os.path.basename(proto_file)
     protofile_pb2_grpc = importlib.import_module(os.path.splitext(file_name)[0] + "_pb2_grpc")
     protofile_pb2 = importlib.import_module(os.path.splitext(file_name)[0] + "_pb2")
@@ -195,8 +183,6 @@ def send_requests(user_id, server_address, num_requests,proto_file,service_name,
     success_count = 0 
     error_counts = {'Timeout error': 0, 'Internal server error': 0 , 'Invalid Agruments':0}
     for req in range(num_requests):
-        # request = grpc_client.createRequest( method_name, user_id)
-        # request_name = "MyRequest"
         request_start_time = time.time()
         try:
             request = None
@@ -252,7 +238,7 @@ def send_requests(user_id, server_address, num_requests,proto_file,service_name,
         #     time.sleep(abs(time_per_request - ( time.time() - request_start_time)))
         # time.sleep(1*(random.random()))
     channel.close()
-    end_time_overall = time.time()
+    # end_time_overall = time.time()
     # print(f'Overall time of user_id : {user_id} is {(end_time_overall-start_time_overall)*1000}')
     return (success_count, error_counts,response_times)
 
@@ -273,16 +259,13 @@ def run_load_test(server_address, num_users, num_requests,proto_file,service_nam
     if(max_users == None):
         max_users = curr_users
 
-    # print (initial_users, max_users, ramp_up_users, ramp_up_time)
+
     jump = (max_users - curr_users)/ramp_up_users
     if(jump != (int)(jump)) :
         jump = (int)(jump + 1)
     jump += 1
     num_requests_all = (int) (num_requests/jump) # Number of requests for all the different combinations except last , uniformly divided
     num_requests_last = (int) (num_requests_all +  num_requests - (jump*num_requests_all)) # Number of requests for the last with max_users
-    # print(jump)
-    # print(num_requests_all)
-    # print(num_requests_last)
 
     average_latency_overall = {}
     percentile50_latency_overall = {}
@@ -305,7 +288,7 @@ def run_load_test(server_address, num_users, num_requests,proto_file,service_nam
 
             num_requests = (int) (num_requests_all/curr_users)
             remain_requests = num_requests_all%curr_users
-            # print(remain_requests)
+
             user_ids = ["user" + str(i) for i in range(1, curr_users+1)]
 
             response_times = []
@@ -391,7 +374,7 @@ def run_load_test(server_address, num_users, num_requests,proto_file,service_nam
             min_latency_overall[curr_users] = min_response_time
             max_latency_overall[curr_users] = max_response_time
                 # Save results to file
-            save_results_to_file(results, output_file.split(".")[0] + ' '+ f'{curr_users}' + ".json")
+            # save_results_to_file(results, output_file.split(".")[0] + ' '+ f'{curr_users}' + ".json")
 
             flag = 1
         elif (( time.time() - start_time) < ramp_up_time):
@@ -418,7 +401,7 @@ def run_load_test(server_address, num_users, num_requests,proto_file,service_nam
         'requests': {
             'total': num_requests_overall,
             'success': total_success_overall,
-            'failure': num_requests-total_success_overall,
+            'failure': num_requests_overall-total_success_overall,
             'rate': success_rate
         },
         'latency': {
@@ -467,7 +450,6 @@ if __name__ == '__main__':
     server_address = args.address
     num_users = args.concurrency
 
-    # total_requests = args.r
     num_requests = args.total
 
     proto_file = args.proto
@@ -476,8 +458,7 @@ if __name__ == '__main__':
     service_name = callMethod.split(".")[-2]
     method_name = callMethod.split(".")[-1]
     (messages, services) = generate_information(proto_file)
-    # print(messages)
-    # print(services)
+
     request_name = services[service_name][method_name][0]
     response_name = services[service_name][method_name][1]
     input_file = args.data
@@ -514,13 +495,10 @@ if __name__ == '__main__':
         "name": f"{service_name} {method_name}"
     }
     save_results_to_file(options_data,"options.json")
-    
-    print(input_data)
 
-    # print(input_data)
-    start_time = time.time()
+    # start_time = time.time()
     run_load_test(server_address, num_users, num_requests, proto_file, service_name, method_name,initial_users, max_users, ramp_up_users, ramp_up_time,  messages, services, request_name, response_name, input_data, output_file)
-    end_time = time.time()
+    # end_time = time.time()
 
-    print((end_time-start_time)*1000)
+    # print((end_time-start_time)*1000)
 
