@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package myservice;
+import "google/protobuf/empty.proto";
+
+
+message MyRequest {
+  string user_id = 1;
+  string name = 2;
+}
+
+message YourRequest{
+  string user_id = 1;
+}
+
+message MyResponse {
+  int32 status_code = 1;
+  string message = 2;
+}
+
+message YourResponse {
+  string answer = 1;
+}
+
+service MyService {
+  rpc MyMethod (MyRequest) returns (MyResponse);
+  rpc YourMethod (YourRequest) returns (YourResponse);
+}
+
